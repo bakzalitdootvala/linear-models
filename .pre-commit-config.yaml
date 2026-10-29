@@ -1,0 +1,88 @@
+# Проверки перед каждым коммитом. GitHub Actions запускает этот же конфиг.
+#   uv run pre-commit install            # один раз после клонирования
+#   uv run pre-commit run --all-files    # проверить весь репозиторий вручную
+# gitleaks здесь проверяет изменения коммита в индексе (staged); CI сканирует ещё и всю историю.
+# Хуки закреплены по SHA коммита, а тег остаётся в комментарии `# frozen:`: тег можно перевесить
+# на другой код, SHA нельзя. Обновлять осознанно: `uv run pre-commit autoupdate --freeze`, потом
+# читать дифф. Версия хука ruff (`# frozen: v0.17.2`) должна совпадать с версией ruff в uv.lock:
+# поднимать вместе.
+
+default_language_version:
+  python: python3.12
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        # В Markdown два пробела в конце строки означают перенос строки.
+        exclude: \.md$
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      # Не пускает в git и на GitHub большие файлы: датасеты и обученные модели.
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: f368fb366ff7f2f808dd324b83a6d32267799e19  # frozen: v0.17.2
+    hooks:
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Стирает из ноутбуков счётчики запусков и метаданные, а выводы оставляет: GitHub показывает
+  # результаты, а диффы остаются маленькими. Перед коммитом ноутбука — Restart and Run All.
+  - repo: https://github.com/kynan/nbstripout
+    rev: 34071b78c181af3bf5af955c1426466e096fc3db  # frozen: 0.9.1
+    hooks:
+      - id: nbstripout
+        args: [--keep-output]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 6eaad039603a4de39fddd1cf5f727391efe9974e  # frozen: v8.30.0
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: e72a3ca1632f0b11a07d171449fe447a7ff6795e  # frozen: v0.48.0
+    hooks:
+      - id: markdownlint
+        args: [--config, .markdownlint.yaml]
+
+  - repo: local
+    hooks:
+      # Работает в окружении проекта (его собирает `uv sync`), поэтому mypy видит те версии numpy,
+      # pandas и pandas-stubs, что записаны в uv.lock, и второй список версий в этом файле не нужен.
+      # `--no-sync`: хук только читает окружение и ничего в него не ставит.
+      # Каждый запуск проверяет весь проект: проверка типов на части файлов даёт ложные ошибки
+      # на импортах из файлов, которые в эту часть не попали.
+      - id: mypy
+        name: mypy (project environment)
+        entry: uv run --no-sync mypy
+        language: system
+        files: ^(src|tests|scripts)/.*\.py$|^pyproject\.toml$
+        pass_filenames: false
+
+      - id: ru-en-parity
+        name: ru/en parity
+        description: у каждого файла в docs/ru/ есть пара в docs/en/ по тому же пути, и наоборот
+        entry: python scripts/check_parity.py
+        language: python
+        pass_filenames: false
+        always_run: true
+
+      - id: relative-links
+        name: relative links
+        description: относительные ссылки ведут на существующие файлы и заголовки
+        entry: python scripts/check_links.py
+        language: python
+        pass_filenames: false
+        always_run: true

@@ -1,0 +1,94 @@
+[project]
+name = "linear-models"
+version = "0.1.0"
+description = "Linear regression implemented from scratch in NumPy, checked against scikit-learn and evaluated on real data."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "bakzalitdootvala", email = "skvozdymperegara@proton.me" }]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5.4",
+    "pandas>=3.1.0",
+    "scikit-learn>=1.9.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+    "mypy>=2.4.0",
+    "pandas-stubs>=3.0.5.260914",
+    "pre-commit>=4.7.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
+
+# ----------------------------------------------------------------------------
+# ruff: линтер и форматирование
+# ----------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "B",        # flake8-bugbear
+    "C4",       # flake8-comprehensions
+    "SIM",      # flake8-simplify
+    "RET",      # flake8-return
+    "PT",       # flake8-pytest-style
+    "NPY",      # правила NumPy: устаревший API np.random и подобное
+    "PD",       # pandas-vet
+    "RUF",      # собственные правила ruff
+]
+ignore = [
+    # Проект двуязычный: идентификаторы латиницей, docstring'и и комментарии по-русски.
+    # Правила ambiguous-unicode срабатывают на каждую кириллическую букву, похожую на латинскую.
+    "RUF001",   # ambiguous-unicode-character-string
+    "RUF002",   # ambiguous-unicode-character-docstring
+    "RUF003",   # ambiguous-unicode-character-comment
+    # В ML-коде матрица признаков называется X и делится на X_train и X_test.
+    "N803",     # invalid-argument-name
+    "N806",     # non-lowercase-variable-in-function
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["linear_models", "scripts", "tests"]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# ----------------------------------------------------------------------------
+# mypy: строгая проверка типов
+# ----------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests", "scripts"]
+
+# У scikit-learn нет маркера py.typed: mypy не видит его типов, и любой вызов в него получает
+# тип Any. У numpy типы свои, pandas покрывают pandas-stubs.
+[[tool.mypy.overrides]]
+module = ["sklearn.*"]
+ignore_missing_imports = true
+
+# ----------------------------------------------------------------------------
+# pytest
+# ----------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-config", "--strict-markers"]

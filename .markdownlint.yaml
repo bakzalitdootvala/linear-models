@@ -1,0 +1,5 @@
+# Правила markdownlint: https://github.com/DavidAnson/markdownlint
+default: true
+
+# Абзац, пункт списка и цитата пишутся одной строкой, поэтому длину строки не проверяем.
+MD013: false

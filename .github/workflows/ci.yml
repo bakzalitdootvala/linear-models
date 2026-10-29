@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: pre-commit hooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          # Та же версия uv, что на машине разработчика: поднимать вместе.
+          version: "0.11.6"
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked
+      # Хук mypy работает в окружении проекта, собранном шагом выше.
+      # Хук gitleaks проверяет только изменения в индексе (staged), а у свежего checkout их нет,
+      # поэтому здесь он пропущен, а всю историю сканирует последний шаг задания.
+      - name: Run all hooks
+        run: uv run --no-sync pre-commit run --all-files --show-diff-on-failure
+        env:
+          SKIP: gitleaks
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: false
+      - name: gitleaks over the whole history
+        run: go run github.com/zricethezav/gitleaks/v8@v8.30.0 git --redact --verbose .
+
+  tests:
+    name: pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.11.6"
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Run tests
+        run: uv run --no-sync pytest

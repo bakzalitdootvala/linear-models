@@ -1,0 +1,130 @@
+# =============================================================================
+# .gitignore
+# =============================================================================
+
+# ---- macOS -------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+.fseventsd
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+.apdisk
+Network Trash Folder
+Temporary Items
+
+# ---- Windows -----------------------------------------------------------------
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.stackdump
+*.lnk
+
+# ---- Linux -------------------------------------------------------------------
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+core.[0-9]*
+
+# ---- Редакторы и IDE ---------------------------------------------------------
+.idea/
+.vscode/
+.fleet/
+.zed/
+.history/
+*.sublime-workspace
+*.swp
+*.swo
+*.swn
+\#*\#
+.#*
+
+# ---- ИИ-агенты и ассистенты для кода -----------------------------------------
+# Локальное состояние и личные файлы инструкций ИИ-агентов. В личных файлах вроде
+# CLAUDE.md часто лежит приватный или рабочий контекст, поэтому в публичный
+# репозиторий они не попадают. AGENTS.md — общий файл инструкций, он коммитится.
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.codex/
+.cursor/
+.cursorrules
+.cursorignore
+.windsurf/
+.windsurfrules
+.gemini/
+GEMINI.md
+.aider*
+.continue/
+.cline/
+.clinerules
+.roo/
+.kiro/
+.junie/
+.amazonq/
+.codeium/
+.tabnine/
+
+# ---- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.ipynb_checkpoints/
+
+# ---- Данные и обученные модели (в git не храним) -----------------------------
+# Датасеты скачиваются или генерируются по требованию, модели можно обучить заново.
+# Пути привязаны к корню репозитория: под `data/` или `models/` без `/` в начале попали бы
+# и подпакеты исходников вроде src/linear_models/models/.
+/data/
+/models/
+*.pkl
+*.joblib
+
+# ---- Личные рабочие заметки (не публикуются) ---------------------------------
+/info/
+
+# ---- Node (локальный запуск markdownlint) ------------------------------------
+node_modules/
+npm-debug.log*
+
+# ---- Секреты -----------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ---- Логи и временные файлы --------------------------------------------------
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+tmp/
+.tmp/
